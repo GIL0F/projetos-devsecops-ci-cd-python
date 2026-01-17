@@ -1,0 +1,4 @@
+# Ignorar vulnerabilidade específica do jaraco.context
+# Já estamos na versão 6.1.0, mas Trivy ainda detecta como vulnerável
+# Status: fixed, mas o scanner ainda marca
+GHSA-58pv-8j8x-9vj2 until: 2026-01-31

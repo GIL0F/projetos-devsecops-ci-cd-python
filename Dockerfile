@@ -1,22 +1,27 @@
 FROM python:3.11-alpine
 
-# Create non-root user
+ARG CACHE_BUSTER=$(date +%s)
+ENV CACHE_BUSTER=${CACHE_BUSTER}
+
 RUN adduser -D appuser
 WORKDIR /app
 
-# Copy requirements first
 COPY app/requirements.txt .
 
-# Install dependencies
-RUN pip install --no-cache-dir --upgrade pip \
- && pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --upgrade pip==24.0
 
-# Copy application code
+RUN echo "=== CONTEÚDO DO requirements.txt ===" && cat requirements.txt
+
+RUN pip install --no-cache-dir \
+    flask==3.0.0 \
+    requests==2.31.0 \
+    jaraco.context==6.1.0
+
+RUN pip list | grep -i jaraco
+
 COPY app/ .
 
-# Switch to non-root user
 USER appuser
-
 EXPOSE 5000
 
 CMD ["python", "app.py"]
