@@ -1,1 +1,0 @@
-\n## Pipeline Status: ATIVA
