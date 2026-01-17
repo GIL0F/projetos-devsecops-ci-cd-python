@@ -14,9 +14,18 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
     
-    - name: Build Docker image
+    - name: Clean Docker cache
       run: |
-        docker build --no-cache -t devsecops-app .
+        docker system prune -a -f
+    
+    - name: Build Docker image (NO CACHE)
+      run: |
+        docker build --no-cache --pull -t devsecops-app .
+    
+    - name: Verify jaraco.context version
+      run: |
+        echo "=== Verificando versão instalada ==="
+        docker run --rm devsecops-app python -c "import jaraco.context; print(f'jaraco.context: {jaraco.context.__version__}')"
     
     - name: Scan with Trivy
       uses: aquasecurity/trivy-action@0.20.0
