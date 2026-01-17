@@ -14,12 +14,10 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
     
-    - name: NUCLEAR - Clean everything
-      run: |
-        docker system prune -a -f
-        sudo rm -rf /var/lib/docker/overlay2/*
+    - name: Clean Docker
+      run: docker system prune -a -f
     
-    - name: Build Docker image (ABSOLUTELY NO CACHE)
+    - name: Build Docker image
       run: |
         docker build \
           --no-cache \
@@ -27,15 +25,17 @@ jobs:
           --build-arg CACHE_BUSTER=$(date +%s) \
           -t devsecops-app .
     
-    - name: VERIFY - Check installed versions
+    - name: Verify jaraco.context version
       run: |
-        echo "=== VERIFICAÇÃO DE VERSÕES ==="
-        docker run --rm devsecops-app pip list | grep -E "(jaraco|flask|requests)"
-        docker run --rm devsecops-app python -c "
-        import jaraco.context
-        print(f'jaraco.context: {jaraco.context.__version__}')
-        assert jaraco.context.__version__ == '6.1.0', 'VERSÃO ERRADA!'
-        "
+        echo "=== VERIFICAÇÃO DE VERSÃO ==="
+        VERSION=$(docker run --rm devsecops-app pip show jaraco.context | grep Version | awk '{print $2}')
+        echo "jaraco.context version: $VERSION"
+        if [ "$VERSION" = "6.1.0" ]; then
+          echo "✅ VERSÃO CORRETA: 6.1.0"
+        else
+          echo "❌ VERSÃO INCORRETA: $VERSION"
+          exit 1
+        fi
     
     - name: Scan with Trivy
       uses: aquasecurity/trivy-action@0.20.0
@@ -46,9 +46,7 @@ jobs:
         format: table
         ignore-unfixed: false
     
-    - name: CELEBRATE! 🎉
+    - name: Success! 🎉
       if: success()
       run: |
-        echo "✅✅✅ PIPELINE PASSOU! ✅✅✅"
-        echo "🎉 jaraco.context está na versão 6.1.0"
-        echo "🚀 Pipeline DevSecOps FUNCIONANDO!"
+        echo "✅✅✅ PIPELINE DEVSECOPS FUNCIONANDO! ✅✅✅"
