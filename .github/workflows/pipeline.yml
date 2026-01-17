@@ -1,0 +1,35 @@
+name: DevSecOps CI/CD Pipeline
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build-and-scan:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Build Docker image
+      run: |
+        docker build --no-cache -t devsecops-app .
+    
+    - name: Scan with Trivy
+      uses: aquasecurity/trivy-action@0.20.0
+      with:
+        image-ref: devsecops-app
+        severity: CRITICAL,HIGH
+        exit-code: 1
+        format: table
+        ignore-unfixed: false
+    
+    - name: Success message
+      if: success()
+      run: |
+        echo "✅ Pipeline completed successfully!"
+        echo "✅ Docker image built: devsecops-app"
+        echo "✅ Trivy scan: PASSED - No critical/high vulnerabilities"
